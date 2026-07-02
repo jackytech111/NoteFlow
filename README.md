@@ -290,8 +290,6 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 - Đăng ký / đăng nhập: thành công & các trường hợp lỗi
 - Refresh token: rotation thành công, token hết hạn, token không còn tồn tại trong DB (bảo vệ trước race-condition khi refresh token đã bị rotate)
 
-> Chưa có integration test (test qua HTTP thật, với DB thật).
-
 ## 📸 Screenshots
 
 > Thêm ảnh chụp màn hình thực tế vào đây khi có (Swagger UI, ví dụ request/response) — ảnh giúp README trực quan hơn nhiều so với chỉ có text.
