@@ -322,4 +322,4 @@ Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Rai
 
 ## 📄 License
 
-ISC
+MIT
