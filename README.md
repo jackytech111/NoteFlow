@@ -320,8 +320,8 @@ Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Rai
 - [x] CRUD Notes / Tags
 - [x] Swagger / OpenAPI
 - [x] Unit Test
+- [x] Pagination
 - [ ] Search Notes
-- [ ] Pagination
 - [ ] Integration Test
 - [ ] Redis Cache
 - [ ] Docker hóa toàn bộ services (hiện chỉ Postgres)
