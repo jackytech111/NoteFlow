@@ -302,13 +302,13 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 
 > Swagger UI
 
-![Swagger](docs/images/SwaggerHome.png)
+![Swagger UI](api-gateway/docs/images/SwaggerHome.png)
 
 > Unit Test
 
-![Swagger](docs/images/AuthTest.png)
+![Unit Test](api-gateway/docs/images/AuthTest.png)
 
-![Swagger](docs/images/User.png)
+![Unit Test](api-gateway/docs/images/User.png)
 
 ## 🐳 Deploy
 
