@@ -117,20 +117,28 @@ erDiagram
 ```mermaid
 erDiagram
     NOTES ||--o{ NOTE_TAGS : has
+
     NOTES {
         string id PK
-        string user_id "logical ref -> auth-service.users.id"
+        string user_id
         string title
         text content
         boolean is_deleted
         datetime created_at
         datetime updated_at
     }
+
     NOTE_TAGS {
-        string note_id PK_FK
-        string tag_id PK "logical ref -> tag-service.tags.id"
+        string note_id PK
+        string tag_id PK
     }
 ```
+
+> **Note**
+>
+> - `user_id` stores the User ID from the Auth Service.
+> - `tag_id` stores the Tag ID from the Tag Service.
+> - Since NoteFlow follows a microservices architecture, these are **logical references** rather than database foreign keys.
 
 **Tag Service**
 
