@@ -306,9 +306,9 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 
 > Unit Test
 
-![Unit Test](api-gateway/docs/images/AuthTest.png)
+![Unit Test Auth Service](api-gateway/docs/images/AuthTest.png)
 
-![Unit Test](api-gateway/docs/images/User.png)
+![Unit Test User Service](api-gateway/docs/images/UserTest.png)
 
 ## 🐳 Deploy
 
