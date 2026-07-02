@@ -300,7 +300,15 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 
 ## 📸 Screenshots
 
-> Thêm ảnh chụp màn hình thực tế vào đây khi có (Swagger UI, ví dụ request/response) — ảnh giúp README trực quan hơn nhiều so với chỉ có text.
+> Swagger UI
+
+![Swagger](docs/images/SwaggerHome.png)
+
+> Unit Test
+
+![Swagger](docs/images/AuthTest.png)
+
+![Swagger](docs/images/User.png)
 
 ## 🐳 Deploy
 
