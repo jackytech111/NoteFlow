@@ -38,47 +38,47 @@ export function isPublicRoute(path: string): boolean {
 /**
  * JWT Authentication Middleware for API Gateway
  */
-export function gatewayAuth(req: Request, res: Response, next: NextFunction) {
+export function gatewayAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   // Skip authentication for public routes
   if (isPublicRoute(req.path)) {
-    return next();
+    next();
+    return;
   }
 
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json(createErrorResponse("Access token required"));
+    res.status(401).json(createErrorResponse("Access token required"));
+    return;
   }
 
   const jwtSecret = process.env.JWT_SECRET;
+
   if (!jwtSecret) {
     console.error("JWT_SECRET not configured in API Gateway");
-    return res
-      .status(500)
-      .json(createErrorResponse("Server configuration error"));
+    res.status(500).json(createErrorResponse("Server configuration error"));
+    return;
   }
 
-  jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
-    if (err) {
-      console.error("VERIFY ERROR:", err);
-
-      return res
-        .status(403)
-        .json(createErrorResponse("Invalid or expired token"));
-    }
-
-    console.log("DECODED:", decoded);
+  try {
+    const decoded = jwt.verify(token, jwtSecret) as any;
 
     req.user = decoded;
-
     req.headers["x-user-id"] = decoded.userId;
     req.headers["x-user-email"] = decoded.email;
 
     next();
-  });
-}
+  } catch (err) {
+    console.error("VERIFY ERROR:", err);
 
+    res.status(403).json(createErrorResponse("Invalid or expired token"));
+  }
+}
 /**
  * Optional Authentication Middleware
  * Adds user to request if token is valid, but doesn't require it
