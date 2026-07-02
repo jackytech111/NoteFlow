@@ -1,0 +1,464 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "NoteFlow API",
+    "version": "1.0.0",
+    "description": "API documentation for NoteFlow - a microservices-based note-taking application with auth, user, note, and tag services behind an API Gateway."
+  },
+  "servers": [
+    {
+      "url": "{{API_GATEWAY_URL}}",
+      "description": "API Gateway (main entry point)"
+    },
+    {
+      "url": "{{USER_URL}}",
+      "description": "User service (direct access, if applicable)"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Register",
+        "tags": ["Authentication Flow"],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              },
+              "example": {
+                "email": "api13user@gateway.com",
+                "password": "Password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "User already exists" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login",
+        "tags": ["Authentication Flow"],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              },
+              "example": {
+                "email": "api13user@gateway.com",
+                "password": "Password123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User logged in successfully" },
+          "401": { "description": "Invalid email or password" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Refresh Token",
+        "tags": ["Authentication Flow"],
+        "security": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["refreshToken"],
+                "properties": {
+                  "refreshToken": { "type": "string" }
+                }
+              },
+              "example": {
+                "refreshToken": "{{json_web_token_0j3w}}"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tokens refreshed successfully" },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "tags": ["Authentication Flow"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["refreshToken"],
+                "properties": {
+                  "refreshToken": { "type": "string" }
+                }
+              },
+              "example": {
+                "refreshToken": "{{json_web_token_10xj}}"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User logged out successfully" }
+        }
+      }
+    },
+    "/auth/validate": {
+      "post": {
+        "summary": "Validate Token",
+        "description": "Internal endpoint used by other services to validate an access token.",
+        "tags": ["Authentication Flow"],
+        "responses": {
+          "200": { "description": "Token is valid" },
+          "401": { "description": "Invalid or missing token" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "delete": {
+        "summary": "Delete profile",
+        "tags": ["Authentication Flow"],
+        "responses": {
+          "200": { "description": "Account deleted successfully" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/profile": {
+      "get": {
+        "summary": "Get User",
+        "tags": ["User Flow"],
+        "responses": {
+          "200": { "description": "User profile retrieved" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "put": {
+        "summary": "Update User Profile",
+        "tags": ["User Flow"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "bio": { "type": "string" },
+                  "preferences": {
+                    "type": "object",
+                    "properties": {
+                      "theme": { "type": "string" },
+                      "notifications": { "type": "boolean" },
+                      "language": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "firstName": "Anton",
+                "lastName": "Doe",
+                "bio": "Software engineer passionate about building great APIs and great UI design",
+                "preferences": {
+                  "theme": "dark",
+                  "notifications": true,
+                  "language": "en"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Profile updated successfully" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/notes": {
+      "post": {
+        "summary": "Create Note",
+        "tags": ["Notes Flow"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "content"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "string" },
+                  "tagIds": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "uuid" }
+                  }
+                }
+              },
+              "example": {
+                "title": "Test note",
+                "content": "Hello world",
+                "tagIds": ["f91baf2d-8751-48c0-a06d-c37ddf3498ab"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Note created successfully" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "Get all notes",
+        "tags": ["Notes Flow"],
+        "responses": {
+          "200": { "description": "List of notes" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/notes/{id}": {
+      "get": {
+        "summary": "Get note by ID",
+        "tags": ["Notes Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Note found" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Note not found" }
+        }
+      },
+      "put": {
+        "summary": "Update Note",
+        "tags": ["Notes Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "string" },
+                  "tagIds": {
+                    "type": "array",
+                    "items": { "type": "string", "format": "uuid" }
+                  }
+                }
+              },
+              "example": {
+                "title": "title",
+                "content": "content",
+                "tagIds": ["5da61bc6-51e6-473e-bc2b-c51d41e329e7"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Note updated successfully" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Note not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete note",
+        "tags": ["Notes Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Note deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Note not found" }
+        }
+      }
+    },
+    "/notes/{id}/restore": {
+      "post": {
+        "summary": "Restore note",
+        "tags": ["Notes Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Note restored successfully" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Note not found" }
+        }
+      }
+    },
+    "/notes/tag/{tagId}": {
+      "get": {
+        "summary": "Filter notes by tag",
+        "tags": ["Notes Flow"],
+        "parameters": [
+          {
+            "name": "tagId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List of notes with the given tag" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/tags": {
+      "post": {
+        "summary": "Create tag",
+        "tags": ["Tags Flow"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "color": { "type": "string" }
+                }
+              },
+              "example": {
+                "name": "work",
+                "color": "#FF2325"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Tag created successfully" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "get": {
+        "summary": "Get list of tags",
+        "tags": ["Tags Flow"],
+        "responses": {
+          "200": { "description": "List of tags" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/tags/{id}": {
+      "put": {
+        "summary": "Update tag",
+        "tags": ["Tags Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "color": { "type": "string" }
+                }
+              },
+              "example": {
+                "name": "work-update",
+                "color": "#FF5733"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Tag updated successfully" },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Tag not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete tag",
+        "tags": ["Tags Flow"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Tag deleted successfully" },
+          "401": { "description": "Unauthorized" },
+          "404": { "description": "Tag not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

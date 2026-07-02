@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: noteflow-postgres
+    environment:
+      POSTGRES_USER: noteflow
+      POSTGRES_PASSWORD: noteflow123
+      POSTGRES_DB: noteflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    networks:
+      - noteflow-network
+
+volumes:
+  postgres_data:
+
+networks:
+  noteflow-network:
+    driver: bridge
