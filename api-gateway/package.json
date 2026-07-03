@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec \"npx ts-node --transpile-only src/index.ts\"",
     "build": "tsc",
-    "start": "node dist/NoteFlow/api-gateway/src/index.js"
+    "start": "node dist/api-gateway/src/index.js"
   },
   "keywords": [],
   "author": "",

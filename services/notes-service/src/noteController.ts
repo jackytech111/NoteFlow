@@ -16,7 +16,6 @@ export const createNote = asyncHandler(async (req: Request, res: Response) => {
     return res.status(401).json(createErrorResponse("Unauthorized"));
   }
 
-  // Extract JWT token from auth he
   const authHeader = req.headers.authorization;
   const authToken = authHeader?.startsWith("Bearer ")
     ? authHeader.slice(7)
@@ -50,7 +49,7 @@ export const getNotes = asyncHandler(async (req: Request, res: Response) => {
 export const getNotesByTag = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.userId;
-    const { tagId } = req.params;
+    const tagId = req.params.tagId as string; // ← THÊM ép kiểu
 
     if (!userId) {
       return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -81,7 +80,7 @@ export const getNotesByTag = asyncHandler(
 
 export const updateNote = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { noteId } = req.params;
+  const noteId = req.params.noteId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -106,7 +105,7 @@ export const updateNote = asyncHandler(async (req: Request, res: Response) => {
 
 export const deleteNote = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { noteId } = req.params;
+  const noteId = req.params.noteId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -121,7 +120,7 @@ export const deleteNote = asyncHandler(async (req: Request, res: Response) => {
 
 export const restoreNote = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { noteId } = req.params;
+  const noteId = req.params.noteId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -136,7 +135,7 @@ export const restoreNote = asyncHandler(async (req: Request, res: Response) => {
 
 export const getNoteById = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { noteId } = req.params;
+  const noteId = req.params.noteId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));

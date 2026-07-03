@@ -2,7 +2,6 @@ import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import dotenv from "dotenv";
 import authRoutes from "./routes";
 import {
   corsOptions,

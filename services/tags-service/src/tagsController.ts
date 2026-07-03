@@ -53,7 +53,7 @@ export const getTags = asyncHandler(async (req: Request, res: Response) => {
 
 export const getTagById = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { tagId } = req.params;
+  const tagId = req.params.tagId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -68,7 +68,7 @@ export const getTagById = asyncHandler(async (req: Request, res: Response) => {
 
 export const updateTag = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { tagId } = req.params;
+  const tagId = req.params.tagId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));
@@ -83,7 +83,7 @@ export const updateTag = asyncHandler(async (req: Request, res: Response) => {
 
 export const deleteTag = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
-  const { tagId } = req.params;
+  const tagId = req.params.tagId as string; // ← THÊM ép kiểu
 
   if (!userId) {
     return res.status(401).json(createErrorResponse("Unauthorized"));

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec \"npx ts-node --transpile-only src/index.ts\"",
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/services/user-service/src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +34,7 @@
     "prisma": "^6.19.3",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "tsc-alias": "^1.8.10"
   }
 }

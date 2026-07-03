@@ -11,6 +11,134 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-database.sql:/docker-entrypoint-initdb.d/init-database.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noteflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - noteflow-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: noteflow-auth
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://noteflow:noteflow123@postgres:5432/noteflow_auth
+      PORT: 3001
+      NODE_ENV: development
+      JWT_SECRET: your-super-secret-jwt-key-for-development-only
+      JWT_REFRESH_SECRET: your-super-secret-refresh-key-for-development-only
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      CORS_ORIGIN: http://localhost:3000
+      CORS_CREDENTIALS: "true"
+      BCRYPT_ROUNDS: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - noteflow-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: noteflow-user
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_URL: postgresql://noteflow:noteflow123@postgres:5432/noteflow_users
+      PORT: 3002
+      NODE_ENV: development
+      AUTH_SERVICE_URL: http://auth-service:3001
+      JWT_SECRET: your-super-secret-jwt-key-for-development-only
+      CORS_ORIGIN: http://localhost:3000
+      CORS_CREDENTIALS: "true"
+      BCRYPT_ROUNDS: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - noteflow-network
+
+  notes-service:
+    build:
+      context: .
+      dockerfile: services/notes-service/Dockerfile
+    container_name: noteflow-notes
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: postgresql://noteflow:noteflow123@postgres:5432/noteflow_notes
+      PORT: 3003
+      NODE_ENV: development
+      AUTH_SERVICE_URL: http://auth-service:3001
+      TAGS_SERVICE_URL: http://tags-service:3004
+      JWT_SECRET: your-super-secret-jwt-key-for-development-only
+      CORS_ORIGIN: http://localhost:3000
+      CORS_CREDENTIALS: "true"
+      BCRYPT_ROUNDS: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      tags-service:
+        condition: service_started
+    networks:
+      - noteflow-network
+
+  tags-service:
+    build:
+      context: .
+      dockerfile: services/tags-service/Dockerfile
+    container_name: noteflow-tags
+    ports:
+      - "3004:3004"
+    environment:
+      DATABASE_URL: postgresql://noteflow:noteflow123@postgres:5432/noteflow_tags
+      PORT: 3004
+      NODE_ENV: development
+      AUTH_SERVICE_URL: http://auth-service:3001
+      JWT_SECRET: your-super-secret-jwt-key-for-development-only
+      CORS_ORIGIN: http://localhost:3000
+      CORS_CREDENTIALS: "true"
+      BCRYPT_ROUNDS: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - noteflow-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: noteflow-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:3000
+      CORS_CREDENTIALS: "true"
+      AUTH_SERVICE_URL: http://auth-service:3001
+      USER_SERVICE_URL: http://user-service:3002
+      NOTES_SERVICE_URL: http://notes-service:3003
+      TAGS_SERVICE_URL: http://tags-service:3004
+    depends_on:
+      - auth-service
+      - user-service
+      - notes-service
+      - tags-service
     networks:
       - noteflow-network
 

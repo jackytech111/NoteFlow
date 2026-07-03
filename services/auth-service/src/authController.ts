@@ -12,7 +12,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const tokens = await authService.register(email, password);
 
-  res
+  return res
     .status(201)
     .json(createSuccessResponse(tokens, "User registered successfully"));
 });
@@ -21,7 +21,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const tokens = await authService.login(email, password);
 
-  res
+  return res
     .status(200)
     .json(createSuccessResponse(tokens, "User logged in successfully"));
 });
@@ -31,7 +31,7 @@ export const refreshTokens = asyncHandler(
     const { refreshToken } = req.body;
     const tokens = await authService.refreshToken(refreshToken);
 
-    res
+    return res
       .status(200)
       .json(createSuccessResponse(tokens, "Tokens refreshed successfully"));
   },
@@ -41,7 +41,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
   await authService.logout(refreshToken);
 
-  res
+  return res
     .status(200)
     .json(createSuccessResponse(null, "User logged out successfully"));
 });
@@ -57,7 +57,9 @@ export const validateToken = asyncHandler(
 
     const payload = await authService.validateToken(token);
 
-    res.status(200).json(createSuccessResponse(payload, "Token is valid"));
+    return res
+      .status(200)
+      .json(createSuccessResponse(payload, "Token is valid"));
   },
 );
 

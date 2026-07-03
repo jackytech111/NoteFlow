@@ -41,6 +41,14 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    service: "api-gateway",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openapiSpec));
 

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --exec \"npx ts-node --transpile-only src/index.ts\"",
-    "test": "jest --passWithNoTests"
+    "test": "jest",
+    "build": "tsc && tsc-alias",
+    "start": "node dist/services/tags-service/src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +19,8 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "helmet": "^8.2.0",
-    "joi": "^18.2.3"
+    "joi": "^18.2.3",
+    "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -27,6 +30,8 @@
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
     "prisma": "^6.19.3",
-    "ts-jest": "^29.4.11"
+    "ts-jest": "^29.4.11",
+    "typescript": "^6.0.3",
+    "tsc-alias": "^1.8.10"
   }
 }

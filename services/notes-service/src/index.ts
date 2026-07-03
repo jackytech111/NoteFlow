@@ -31,7 +31,7 @@ app.get("/health", healthCheck);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`User service is running on port ${PORT}`);
+  console.log(`Notes service is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });

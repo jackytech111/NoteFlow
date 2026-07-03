@@ -30,13 +30,14 @@ export function authenticateToken(
     return res.status(500).json(createErrorResponse("Internal Server Error"));
   }
 
-  jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
+  return jwt.verify(token, jwtSecret, (err: any, decoded: any) => {
     if (err) {
       return res.status(403).json(createErrorResponse("Invalid token"));
     }
 
     req.user = decoded as JWTPayload; // Attach user info to request
     next();
+    return; // ← THÊM: nhánh thành công cũng phải return tường minh
   });
 }
 
@@ -56,7 +57,7 @@ export function validateRequest(schema: any) {
       const errors: Record<string, string[]> = {};
       error.details.forEach((detail: any) => {
         const field = detail.path.join(".");
-        if (!error[field]) {
+        if (!errors[field]) {
           errors[field] = [];
         }
         errors[field].push(detail.message);
@@ -70,6 +71,7 @@ export function validateRequest(schema: any) {
     }
 
     next();
+    return;
   };
 }
 
