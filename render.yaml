@@ -1,0 +1,150 @@
+services:
+  - type: web
+    name: noteflow-auth
+    runtime: docker
+    dockerfilePath: ./services/auth-service/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: PORT
+        value: 3001
+      - key: NODE_ENV
+        value: production
+      - key: BCRYPT_ROUNDS
+        value: 10
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CORS_CREDENTIALS
+        value: "true"
+
+  - type: web
+    name: noteflow-user
+    runtime: docker
+    dockerfilePath: ./services/user-service/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 3002
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: BCRYPT_ROUNDS
+        value: 10
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CORS_CREDENTIALS
+        value: "true"
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: noteflow-auth
+          type: web
+          property: hostport
+
+  - type: web
+    name: noteflow-notes
+    runtime: docker
+    dockerfilePath: ./services/notes-service/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 3003
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: BCRYPT_ROUNDS
+        value: 10
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CORS_CREDENTIALS
+        value: "true"
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: noteflow-auth
+          type: web
+          property: hostport
+      - key: TAGS_SERVICE_URL
+        fromService:
+          name: noteflow-tags
+          type: web
+          property: hostport
+
+  - type: web
+    name: noteflow-tags
+    runtime: docker
+    dockerfilePath: ./services/tags-service/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 3004
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: BCRYPT_ROUNDS
+        value: 10
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CORS_CREDENTIALS
+        value: "true"
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: noteflow-auth
+          type: web
+          property: hostport
+
+  - type: web
+    name: noteflow-gateway
+    runtime: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CORS_CREDENTIALS
+        value: "true"
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: noteflow-auth
+          type: web
+          property: hostport
+      - key: USER_SERVICE_URL
+        fromService:
+          name: noteflow-user
+          type: web
+          property: hostport
+      - key: NOTES_SERVICE_URL
+        fromService:
+          name: noteflow-notes
+          type: web
+          property: hostport
+      - key: TAGS_SERVICE_URL
+        fromService:
+          name: noteflow-tags
+          type: web
+          property: hostport
