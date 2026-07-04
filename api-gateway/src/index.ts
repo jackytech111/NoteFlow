@@ -42,6 +42,22 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req, res) => {
+  res.json({
+    message: "NoteFlow API Gateway",
+    status: "running",
+    endpoints: {
+      health: "/health",
+      docs: "/api-docs",
+      auth: "/api/auth/*",
+      users: "/api/users/*",
+      notes: "/api/notes/*",
+      tags: "/api/tags/*",
+    },
+    repository: "https://github.com/jackytech111/NoteFlow",
+  });
+});
+
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
