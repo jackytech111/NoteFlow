@@ -11,6 +11,7 @@ import {
 
 //load environment variables
 dotenv.config();
+dotenv.config({ quiet: true });
 
 const app = express();
 const PORT = process.env.PORT || 3003;

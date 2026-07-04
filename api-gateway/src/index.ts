@@ -10,6 +10,7 @@ import swaggerUi from "swagger-ui-express";
 
 //load environment variables
 dotenv.config();
+dotenv.config({ quiet: true });
 
 const app = express();
 const PORT = process.env.PORT || 8080;
