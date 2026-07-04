@@ -70,7 +70,7 @@ graph TD
     Tag --> TagDB
 ```
 
-Mỗi service có database riêng biệt trên cùng 1 PostgreSQL instance (port `5433`), khởi tạo qua `init-database.sql`. Không có foreign key thật giữa các database khác nhau — các tham chiếu như `userId` trong `Note`/`Tag` là **logical reference**, được đảm bảo tính đúng đắn ở tầng application chứ không phải DB constraint.
+Mỗi service có database riêng biệt trên cùng 1 PostgreSQL instance (port `5433` khi chạy local), khởi tạo qua `init-database.sql`. Không có foreign key thật giữa các database khác nhau — các tham chiếu như `userId` trong `Note`/`Tag` là **logical reference**, được đảm bảo tính đúng đắn ở tầng application chứ không phải DB constraint.
 
 ## 🗄️ Database Schema (ERD)
 
@@ -212,8 +212,9 @@ NoteFlow/
 │   ├── note-service/       # CRUD ghi chú — :3003
 │   └── tag-service/        # CRUD nhãn — :3004
 ├── shared/                  # Types, utils, middleware dùng chung
-├── init-database.sql        # Khởi tạo các DB riêng cho từng service
-├── docker-compose.yml        # PostgreSQL container
+├── init-database.sql        # Khởi tạo các DB riêng cho từng service (local)
+├── docker-compose.yml        # PostgreSQL + toàn bộ services (local dev)
+├── render.yaml               # Render Blueprint (production deploy)
 └── README.md
 ```
 
@@ -249,6 +250,8 @@ cp .env.example .env
 
 > `JWT_SECRET`/`JWT_REFRESH_SECRET` phải **giống nhau** giữa `auth-service` và các service khác cần validate token.
 
+> ⚠️ Không commit file `.env`/`.env.docker` chứa giá trị thật lên Git. Nếu secret từng bị lộ (ví dụ dán vào chat, log, hay commit nhầm), phải **rotate lại ngay** (đổi `JWT_SECRET` và database password) trên tất cả nơi liên quan.
+
 ### Chạy Database
 
 ```bash
@@ -278,6 +281,14 @@ cd api-gateway && npm run dev
 
 Gateway chạy tại: `http://localhost:8080`
 
+### Chạy toàn bộ bằng Docker Compose (khuyến nghị cho test local)
+
+```bash
+docker compose up --build
+```
+
+Khởi động cả 4 service + `api-gateway` + Postgres trong 1 mạng nội bộ Docker, gateway gọi các service qua tên service (`http://auth-service:3001`, ...).
+
 ## 📖 API Documentation
 
 ```
@@ -298,6 +309,8 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 - Đăng ký / đăng nhập: thành công & các trường hợp lỗi
 - Refresh token: rotation thành công, token hết hạn, token không còn tồn tại trong DB (bảo vệ trước race-condition khi refresh token đã bị rotate)
 
+Mỗi service khác (`user-service`, `notes-service`, `tags-service`) cũng có bộ Jest test riêng, chạy tương tự (`npm test` trong thư mục service đó).
+
 ## 📸 Screenshots
 
 > Swagger UI
@@ -312,7 +325,47 @@ Test hiện tại (unit test, mock toàn bộ dependency ngoài — bcrypt, json
 
 ## 🐳 Deploy
 
-Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Railway service riêng trong cùng project, chỉ `api-gateway` bật Public Networking, các service còn lại giữ private, giao tiếp qua mạng nội bộ Railway.
+### Render (đang dùng cho production)
+
+Toàn bộ hệ thống được deploy qua [Render](https://render.com) bằng **Blueprint** (`render.yaml`) — mỗi service là 1 Web Service riêng, cùng 1 Render workspace.
+
+**Database:** dùng [Neon](https://neon.tech) (Postgres serverless), 1 project chứa 4 database riêng biệt (`noteflow_auth`, `noteflow_users`, `noteflow_notes`, `noteflow_tags`), tương tự cấu trúc local nhưng khác host.
+
+#### ⚠️ Giới hạn quan trọng của Free tier trên Render
+
+> Free web service trên Render **có thể gửi** request qua private network, nhưng **không thể nhận**. Vì vậy các service backend (`auth`, `user`, `notes`, `tags`) không nhận được request nội bộ nếu gateway gọi qua hostname private.
+
+Do đó, `api-gateway` gọi sang các service khác qua **public URL** (`https://noteflow-<service>.onrender.com`), không dùng hostname nội bộ kiểu Docker Compose. Nếu nâng cấp lên gói trả phí, có thể chuyển sang dùng `fromService` + `property: hostport` trong `render.yaml` để giao tiếp qua private network, nhanh hơn và không tính bandwidth.
+
+Hệ quả khác của free tier: mỗi service tự "ngủ" sau một khoảng thời gian không có request, khiến lần gọi đầu tiên có thể chậm hơn 50 giây (cold start) — đây là giới hạn cố hữu của nền tảng, không phải lỗi ứng dụng.
+
+#### Các biến môi trường phải điền TAY sau khi deploy Blueprint
+
+`render.yaml` khai báo các biến sau với `sync: false` — nghĩa là Render tạo sẵn tên biến nhưng **không tự điền giá trị**. Sau mỗi lần tạo mới service (hoặc deploy lại từ đầu), phải vào tab **Environment** của **từng service** trên Render Dashboard để nhập tay, rồi bấm **Save Changes**:
+
+| Biến                 | Service cần set                                               | Lưu ý                                                                                                                                                                                                |
+| -------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `JWT_SECRET`         | **Cả 5 service** (`auth`, `user`, `notes`, `tags`, `gateway`) | Phải **giống hệt nhau tuyệt đối** ở tất cả service — đây là cơ chế các service khác verify được token do `auth-service` ký ra. Thiếu ở bất kỳ service nào sẽ gây lỗi `"Server configuration error"`. |
+| `JWT_REFRESH_SECRET` | Chỉ `auth-service`                                            |                                                                                                                                                                                                      |
+| `DATABASE_URL`       | 4 service backend (`auth`, `user`, `notes`, `tags`)           | Mỗi service dùng **connection string khác nhau**, chỉ khác tên database ở cuối URL (`noteflow_auth`, `noteflow_users`, `noteflow_notes`, `noteflow_tags`). Lấy từ Neon Console → Connection Details. |
+| `CORS_ORIGIN`        | Tất cả service                                                | Trỏ về domain frontend thật khi có, tạm thời có thể để `*` hoặc domain dev khi test.                                                                                                                 |
+
+**Dấu hiệu nhận biết thiếu biến nào:**
+
+- Thiếu `JWT_SECRET` → response trả `"Server configuration error"` (từ gateway) hoặc lỗi tương tự ở service con.
+- Thiếu/sai `DATABASE_URL` → lỗi trả nguyên văn từ Prisma, dạng `"Environment variable not found: DATABASE_URL"` hoặc `"Invalid ... invocation"`.
+
+#### Checklist khi deploy lại từ đầu (ví dụ tạo Render account mới, hoặc xóa hết service cũ)
+
+1. Tạo 4 database trên Neon: `noteflow_auth`, `noteflow_users`, `noteflow_notes`, `noteflow_tags` (cùng 1 project, chung host/user/password, khác tên DB).
+2. Push `render.yaml` lên nhánh `main` → Render tự tạo 5 service qua Blueprint.
+3. Vào từng service, điền tay `JWT_SECRET` (giống nhau ở cả 5), `DATABASE_URL` (khác nhau ở 4 service backend), `CORS_ORIGIN`.
+4. Đảm bảo Dockerfile/migrate chạy `npx prisma migrate deploy` trước khi service start, để tạo bảng trong database mới (database trống sẽ gây lỗi `relation does not exist`).
+5. Test lại theo thứ tự: `auth` (register/login) → `user` (profile) → `tags` → `notes`, qua `api-gateway`, không gọi thẳng từng service.
+
+### Railway (phương án thay thế, chưa triển khai)
+
+Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Railway service riêng trong cùng project, chỉ `api-gateway` bật Public Networking, các service còn lại giữ private, giao tiếp qua mạng nội bộ Railway (Railway không có giới hạn free-tier-chặn-nhận-private-traffic giống Render, cần xác nhận lại nếu chọn hướng này).
 
 ## 🗺️ Roadmap
 
@@ -321,11 +374,12 @@ Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Rai
 - [x] Swagger / OpenAPI
 - [x] Unit Test
 - [x] Pagination
+- [x] Deploy production (Render + Neon)
 - [ ] Search Notes
 - [ ] Integration Test
 - [ ] Redis Cache
-- [ ] Docker hóa toàn bộ services (hiện chỉ Postgres)
-- [ ] CI/CD
+- [x] Docker hóa toàn bộ services
+- [ ] CI/CD (GitHub Actions)
 
 ## 🔮 Future Improvements
 
@@ -333,6 +387,7 @@ Có thể deploy lên [Railway](https://railway.com) — mỗi service là 1 Rai
 - Message queue (RabbitMQ) cho giao tiếp bất đồng bộ giữa service
 - Distributed tracing (VD: OpenTelemetry) để debug request xuyên nhiều service
 - Monitoring: Prometheus + Grafana
+- Chuyển gateway ↔ services sang private network khi nâng cấp Render lên gói trả phí
 
 ## 📄 License
 
