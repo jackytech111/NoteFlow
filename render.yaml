@@ -49,10 +49,7 @@ services:
       - key: CORS_CREDENTIALS
         value: "true"
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: noteflow-auth
-          type: web
-          property: hostport
+        value: https://noteflow-auth.onrender.com
 
   - type: web
     name: noteflow-notes
@@ -76,15 +73,9 @@ services:
       - key: CORS_CREDENTIALS
         value: "true"
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: noteflow-auth
-          type: web
-          property: hostport
+        value: https://noteflow-auth.onrender.com
       - key: TAGS_SERVICE_URL
-        fromService:
-          name: noteflow-tags
-          type: web
-          property: hostport
+        value: https://noteflow-tags.onrender.com
 
   - type: web
     name: noteflow-tags
@@ -108,10 +99,7 @@ services:
       - key: CORS_CREDENTIALS
         value: "true"
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: noteflow-auth
-          type: web
-          property: hostport
+        value: https://noteflow-auth.onrender.com
 
   - type: web
     name: noteflow-gateway
@@ -129,22 +117,10 @@ services:
       - key: CORS_CREDENTIALS
         value: "true"
       - key: AUTH_SERVICE_URL
-        fromService:
-          name: noteflow-auth
-          type: web
-          property: hostport
+        value: https://noteflow-auth.onrender.com
       - key: USER_SERVICE_URL
-        fromService:
-          name: noteflow-user
-          type: web
-          property: hostport
+        value: https://noteflow-user.onrender.com
       - key: NOTES_SERVICE_URL
-        fromService:
-          name: noteflow-notes
-          type: web
-          property: hostport
+        value: https://noteflow-notes.onrender.com
       - key: TAGS_SERVICE_URL
-        fromService:
-          name: noteflow-tags
-          type: web
-          property: hostport
+        value: https://noteflow-tags.onrender.com
