@@ -90,10 +90,14 @@ export function errorHandler(
   });
 
   const statusCode = error.statusCode || 500;
-  const message = error.message || "Internal Server Error";
+  const isProduction = process.env.NODE_ENV === "production";
+
+  const message =
+    isProduction && statusCode === 500
+      ? "Internal Server Error"
+      : error.message || "Internal Server Error";
 
   res.status(statusCode).json(createErrorResponse(message));
-
   next();
 }
 
