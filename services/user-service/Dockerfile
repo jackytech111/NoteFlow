@@ -3,6 +3,8 @@ FROM node:20-alpine AS base
 WORKDIR /app
 
 COPY shared ./shared
+RUN cd shared && npm install
+
 COPY services/user-service ./services/user-service
 WORKDIR /app/services/user-service
 

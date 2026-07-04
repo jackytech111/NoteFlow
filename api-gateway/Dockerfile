@@ -2,6 +2,7 @@ FROM node:20-alpine AS base
 WORKDIR /app
 
 COPY shared ./shared
+RUN cd shared && npm install
 
 COPY api-gateway ./api-gateway
 WORKDIR /app/api-gateway

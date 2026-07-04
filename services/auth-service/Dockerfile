@@ -3,6 +3,7 @@ WORKDIR /app
 
 # Copy shared package trước (dùng chung cho mọi service)
 COPY shared ./shared
+RUN cd shared && npm install
 
 # Copy service code
 COPY services/auth-service ./services/auth-service

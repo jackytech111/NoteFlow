@@ -2,6 +2,7 @@ FROM node:20-alpine AS base
 WORKDIR /app
 
 COPY shared ./shared
+RUN cd shared && npm install
 
 COPY services/notes-service ./services/notes-service
 WORKDIR /app/services/notes-service
