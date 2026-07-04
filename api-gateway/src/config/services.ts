@@ -10,31 +10,40 @@ export interface ServicesConfig {
   [key: string]: ServiceConfig;
 }
 
+// Render's `fromService` env vars return "hostname:port" without a scheme,
+// while local .env files already include "http://". Normalize both cases.
+function normalizeUrl(url: string): string {
+  if (!/^https?:\/\//i.test(url)) {
+    return `http://${url}`;
+  }
+  return url;
+}
+
 export const servicesConfig: ServicesConfig = {
   auth: {
     name: "Auth Service",
-    url: process.env.AUTH_SERVICE_URL || "http://localhost:3001",
+    url: normalizeUrl(process.env.AUTH_SERVICE_URL || "http://localhost:3001"),
     healthPath: "/health",
     timeout: 5000,
     retries: 3,
   },
   users: {
     name: "Users Service",
-    url: process.env.USER_SERVICE_URL || "http://localhost:3002",
+    url: normalizeUrl(process.env.USER_SERVICE_URL || "http://localhost:3002"),
     healthPath: "/health",
     timeout: 5000,
     retries: 3,
   },
   notes: {
     name: "Notes Service",
-    url: process.env.NOTES_SERVICE_URL || "http://localhost:3003",
+    url: normalizeUrl(process.env.NOTES_SERVICE_URL || "http://localhost:3003"),
     healthPath: "/health",
     timeout: 5000,
     retries: 3,
   },
   tags: {
     name: "Tags Service",
-    url: process.env.TAGS_SERVICE_URL || "http://localhost:3004",
+    url: normalizeUrl(process.env.TAGS_SERVICE_URL || "http://localhost:3004"),
     healthPath: "/health",
     timeout: 5000,
     retries: 3,
