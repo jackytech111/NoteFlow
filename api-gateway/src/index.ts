@@ -78,32 +78,36 @@ app.use(
 );
 
 // Start server
-const server = app.listen(PORT, () => {
-  console.log(`🚀 API Gateway running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV}`);
-  console.log(`🔗 Gateway URL: http://localhost:${PORT}`);
-  console.log(`❤️  Health check: http://localhost:${PORT}/health`);
-  console.log("");
-  console.log("📋 Available endpoints:");
-  console.log(`   Auth Service:  http://localhost:${PORT}/api/auth/*`);
-  console.log(`   User Service:  http://localhost:${PORT}/api/users/*`);
-  console.log(`   Notes Service: http://localhost:${PORT}/api/notes/*`);
-  console.log(`   Tags Service:  http://localhost:${PORT}/api/tags/*`);
-  console.log("");
-});
+let server: ReturnType<typeof app.listen> | undefined;
+
+if (process.env.NODE_ENV !== "test") {
+  server = app.listen(PORT, () => {
+    console.log(`🚀 API Gateway running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV}`);
+    console.log(`🔗 Gateway URL: http://localhost:${PORT}`);
+    console.log(`❤️  Health check: http://localhost:${PORT}/health`);
+    console.log("");
+    console.log("📋 Available endpoints:");
+    console.log(`   Auth Service:  http://localhost:${PORT}/api/auth/*`);
+    console.log(`   User Service:  http://localhost:${PORT}/api/users/*`);
+    console.log(`   Notes Service: http://localhost:${PORT}/api/notes/*`);
+    console.log(`   Tags Service:  http://localhost:${PORT}/api/tags/*`);
+    console.log("");
+  });
+}
 
 // Graceful shutdown
 process.on("SIGINT", () => {
-  console.log("🚦 Shutting down API Gateway...");
-  server.close(() => {
+  console.log(" Shutting down API Gateway...");
+  server?.close(() => {
     console.log("✅ API Gateway shut down gracefully.");
     process.exit(0);
   });
 });
 
 process.on("SIGTERM", () => {
-  console.log("🚦 Shutting down API Gateway...");
-  server.close(() => {
+  console.log("Shutting down API Gateway...");
+  server?.close(() => {
     console.log("✅ API Gateway shut down gracefully.");
     process.exit(0);
   });
