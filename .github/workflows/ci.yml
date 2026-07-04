@@ -17,7 +17,7 @@ jobs:
           - services/user-service
           - services/notes-service
           - services/tags-service
-          - api-gateway
+          # api-gateway: chưa có test, xem Roadmap trong README
     steps:
       - uses: actions/checkout@v4
 
