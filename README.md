@@ -63,10 +63,6 @@ graph TD
     Gateway -->|proxy /api/notes/*| Notes
     Gateway -->|proxy /api/tags/*| Tags
 
-    Notes -.->|validate token| Auth
-    Tags -.->|validate token| Auth
-    User -.->|validate token| Auth
-
     Auth --> AuthDB
     User --> UserDB
     Notes --> NotesDB
@@ -74,6 +70,13 @@ graph TD
 ```
 
 Mỗi service có database riêng biệt trên cùng 1 PostgreSQL instance (port `5433` khi chạy local), khởi tạo qua `init-database.sql`. Không có foreign key thật giữa các database khác nhau — các tham chiếu như `userId` trong `Note`/`Tag` là **logical reference**, được đảm bảo tính đúng đắn ở tầng application chứ không phải DB constraint.
+
+**Xác thực JWT — 2 lớp độc lập, không có network call giữa các service:**
+
+1. **API Gateway** (`gatewayAuth` middleware) verify JWT trước tiên bằng `JWT_SECRET` dùng chung, chặn request thiếu/sai token ngay tại gateway (route công khai như `/api/auth/login` được whitelist, bỏ qua bước này). Nếu hợp lệ, gateway decode token và gắn thêm header `x-user-id`/`x-user-email` trước khi forward.
+2. **Mỗi service backend** (`notes`, `tags`, `user`) tự áp `authenticateToken` (từ `shared/middleware`) trên route của mình, **tự `jwt.verify()` lại một lần nữa** bằng cùng `JWT_SECRET` — độc lập hoàn toàn với bước verify ở gateway, không gọi HTTP sang `auth-service` để xác thực.
+
+Cách thiết kế này đánh đổi 1 chút CPU cho việc verify token 2 lần, để đổi lấy: mỗi service vẫn tự bảo vệ được chính nó ngay cả khi bị gọi trực tiếp (bỏ qua gateway), thay vì tin tưởng tuyệt đối vào header `x-user-id` do tầng trước gắn vào.
 
 ## 🗄️ Database Schema (ERD)
 
@@ -184,21 +187,18 @@ sequenceDiagram
 sequenceDiagram
     participant C as Client
     participant G as API Gateway
-    participant A as Auth Service
     participant N as Notes Service
     participant DB as Notes DB
 
     C->>G: POST /api/notes (Bearer token, title, content, tagIds)
-    G->>A: validate token
-    A-->>G: userId, email
-    G->>N: forward request + user context
+    G->>G: gatewayAuth verify JWT (local, JWT_SECRET)
+    G->>N: forward + header x-user-id/x-user-email
+    N->>N: authenticateToken verify JWT lại (local)
     N->>DB: INSERT note + note_tags
     DB-->>N: created note
     N-->>G: 201 Created
     G-->>C: 201 Created
 ```
-
-> Cơ chế xác thực trong `gatewayAuth` (Gateway tự verify JWT bằng `JWT_SECRET` dùng chung, không gọi `/auth/validate` của auth-service cho mỗi request) — cập nhật lại diagram này nếu logic thay đổi.
 
 ## 📦 Cấu trúc thư mục
 
